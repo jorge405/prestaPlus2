@@ -57,15 +57,7 @@
       </div>
     </AppCard>
 
-    <!-- Modal elegir método -->
-    <PagoModal
-      :open="showPago"
-      :cuota="cuotaSel"
-      @close="showPago = false"
-      @confirm="onMetodo"
-    />
-
-    <!-- Modal QR con comprobante -->
+    <!-- Modal QR (directo) -->
     <QrPagoModal
       :open="showQr"
       :monto="cuotaSel?.monto"
@@ -75,40 +67,16 @@
       @confirm="confirmarQR"
     />
 
-    <!-- Modal efectivo con comprobante -->
-    <div v-if="showEfectivo" class="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
-      <div class="bg-white rounded-3xl w-full max-w-sm p-6">
-        <h3 class="font-bold text-lg mb-1">Pago en efectivo</h3>
-        <p class="text-xs text-slate-500 mb-4">
-          Sube la foto del recibo firmado por el prestamista
-        </p>
-
-        <div class="bg-brand-50 rounded-2xl p-3 text-center mb-4">
-          <p class="text-xs text-brand-700">Monto</p>
-          <p class="font-extrabold text-2xl text-brand-800">Bs. {{ cuotaSel?.monto }}</p>
-        </div>
-
-        <input type="file" accept="image/*" @change="onFileEfectivo"
-          class="w-full text-xs border border-slate-200 rounded-2xl p-2" />
-        <img v-if="comprobanteEfectivo" :src="comprobanteEfectivo"
-          class="mt-3 rounded-2xl max-h-40 mx-auto border border-slate-200" />
-
-        <div class="mt-5 space-y-2">
-          <AppButton :disabled="!comprobanteEfectivo" @click="confirmarEfectivo">
-            Enviar a verificación
-          </AppButton>
-          <AppButton variant="ghost" @click="showEfectivo = false">Cancelar</AppButton>
-        </div>
-      </div>
-    </div>
-
     <!-- Modal ver comprobante enviado -->
-    <div v-if="verComprobanteOpen" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
-         @click.self="verComprobanteOpen = false">
-      <div class="bg-white rounded-3xl w-full max-w-sm p-5 text-center">
+    <div
+      v-if="verComprobanteOpen"
+      class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto"
+      @click.self="verComprobanteOpen = false"
+    >
+      <div class="bg-white rounded-3xl w-full max-w-sm p-5 text-center my-4 max-h-[90vh] overflow-y-auto">
         <p class="font-bold mb-3">Comprobante enviado</p>
         <img v-if="comprobanteVer" :src="comprobanteVer"
-             class="w-full rounded-2xl border border-slate-200 max-h-96 object-contain" />
+             class="w-full rounded-2xl border border-slate-200 max-h-80 object-contain" />
         <p v-else class="text-xs text-slate-400">Sin imagen</p>
         <div class="mt-4">
           <AppButton variant="ghost" @click="verComprobanteOpen = false">Cerrar</AppButton>
@@ -123,7 +91,6 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import AppCard from '../components/AppCard.vue';
 import AppButton from '../components/AppButton.vue';
-import PagoModal from '../components/PagoModal.vue';
 import QrPagoModal from '../components/QRPagoModal.vue';
 import { usePrestamosStore } from '../stores/prestamos';
 
@@ -147,43 +114,19 @@ const iconoEstado = (c) =>
   c.estado === 'PAGADA' ? '✅' :
   c.estado === 'EN_VERIFICACION' ? '🟡' : '⏳';
 
-// --- Flujo de pago
-const showPago = ref(false);
+// --- Flujo de pago (solo QR)
 const showQr = ref(false);
-const showEfectivo = ref(false);
 const cuotaSel = ref(null);
-const comprobanteEfectivo = ref(null);
 
-const abrirPago = (c) => { cuotaSel.value = c; showPago.value = true; };
-
-const onMetodo = (m) => {
-  showPago.value = false;
-  if (m === 'QR') showQr.value = true;
-  else showEfectivo.value = true;
+const abrirPago = (c) => {
+  cuotaSel.value = c;
+  showQr.value = true;
 };
 
 const confirmarQR = ({ metodo, comprobante }) => {
   store.subirComprobante(p.value.id, cuotaSel.value.id, { metodo, comprobante });
   p.value = store.lista.find(x => x.id === route.params.id);
   showQr.value = false;
-  cuotaSel.value = null;
-};
-
-const onFileEfectivo = (e) => {
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = (ev) => (comprobanteEfectivo.value = ev.target.result);
-  r.readAsDataURL(f);
-};
-
-const confirmarEfectivo = () => {
-  store.subirComprobante(p.value.id, cuotaSel.value.id, {
-    metodo: 'EFECTIVO',
-    comprobante: comprobanteEfectivo.value,
-  });
-  p.value = store.lista.find(x => x.id === route.params.id);
-  showEfectivo.value = false;
-  comprobanteEfectivo.value = null;
   cuotaSel.value = null;
 };
 

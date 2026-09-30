@@ -2,15 +2,12 @@
   <div v-if="p" class="space-y-4">
     <button @click="$router.back()" class="text-sm text-brand-700 font-semibold">← Volver a cobros</button>
 
-    <!-- Datos del préstamo + botón ver cliente -->
     <AppCard>
       <div class="flex justify-between items-start">
         <div class="flex-1">
           <p class="text-xs text-slate-400">{{ p.codigoVinculo }}</p>
           <h2 class="font-bold text-lg">{{ nombreCliente }}</h2>
-          <p class="text-xs text-slate-500">
-            CI {{ cliente?.ci || '—' }}
-          </p>
+          <p class="text-xs text-slate-500">CI {{ cliente?.ci || '—' }}</p>
         </div>
         <button
           @click="verCliente"
@@ -28,7 +25,6 @@
       </div>
     </AppCard>
 
-    <!-- Garantía -->
     <AppCard v-if="p.garantias?.length">
       <p class="text-xs text-slate-400 font-semibold mb-2">GARANTÍA DEJADA</p>
       <div v-for="(g, i) in p.garantias" :key="i" class="flex justify-between items-start">
@@ -40,7 +36,6 @@
       </div>
     </AppCard>
 
-    <!-- Alerta de comprobantes por verificar -->
     <AppCard v-if="cuotasEnVerificacion.length">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center text-xl">🟡</div>
@@ -53,7 +48,6 @@
       </div>
     </AppCard>
 
-    <!-- Cuotas -->
     <h3 class="font-bold text-slate-800 mt-2">Cuotas</h3>
 
     <AppCard v-for="c in p.cuotas" :key="c.id">
@@ -97,7 +91,7 @@
     <div v-if="verClienteOpen && datosCliente"
          class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto"
          @click.self="verClienteOpen = false">
-      <div class="bg-white rounded-3xl w-full max-w-sm p-5 my-4">
+      <div class="bg-white rounded-3xl w-full max-w-sm p-5 my-4 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-14 h-14 rounded-2xl bg-brand-gradient flex items-center justify-center text-white text-xl font-extrabold">
             {{ iniciales }}
@@ -112,12 +106,18 @@
           <div class="flex justify-between border-b border-slate-50 py-1.5">
             <span class="text-slate-500">📧 Correo</span>
             <span class="font-semibold text-slate-800 text-right max-w-[60%] truncate">
-              {{ datosCliente.usuario.correo }}
+              {{ datosCliente.usuario.correo || '—' }}
             </span>
           </div>
           <div class="flex justify-between border-b border-slate-50 py-1.5">
             <span class="text-slate-500">📱 Teléfono</span>
             <span class="font-semibold text-slate-800">{{ datosCliente.usuario.telefono || '—' }}</span>
+          </div>
+          <div class="flex justify-between border-b border-slate-50 py-1.5">
+            <span class="text-slate-500">🏠 Dirección</span>
+            <span class="font-semibold text-slate-800 text-right max-w-[60%]">
+              {{ datosCliente.usuario.direccion || '—' }}
+            </span>
           </div>
           <div class="flex justify-between border-b border-slate-50 py-1.5">
             <span class="text-slate-500">📅 Registro</span>
@@ -127,7 +127,6 @@
           </div>
         </div>
 
-        <!-- Resumen -->
         <p class="text-xs font-semibold text-slate-400 mt-4 mb-2">RESUMEN FINANCIERO</p>
         <div class="grid grid-cols-2 gap-2">
           <div class="bg-brand-50 rounded-2xl p-2 text-center">
@@ -150,7 +149,6 @@
           </div>
         </div>
 
-        <!-- Garantías -->
         <p class="text-xs font-semibold text-slate-400 mt-4 mb-2">GARANTÍAS EN PODER</p>
         <div v-if="datosCliente.garantias.length" class="space-y-1">
           <div v-for="(g, i) in datosCliente.garantias" :key="i"
@@ -170,14 +168,7 @@
       </div>
     </div>
 
-    <!-- Modal elegir método -->
-    <PagoModal
-      :open="showPago"
-      :cuota="cuotaSel"
-      @close="showPago = false"
-      @confirm="onMetodo"
-    />
-
+    <!-- Modal QR (registrar pago del admin) -->
     <QrPagoModal
       :open="showQr"
       :monto="cuotaSel?.monto"
@@ -187,33 +178,9 @@
       @confirm="confirmarQR"
     />
 
-    <div v-if="showEfectivo" class="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
-      <div class="bg-white rounded-3xl w-full max-w-sm p-6">
-        <h3 class="font-bold text-lg mb-1">Pago en efectivo</h3>
-        <p class="text-xs text-slate-500 mb-4">Sube la foto del recibo firmado</p>
-
-        <div class="bg-brand-50 rounded-2xl p-3 text-center mb-4">
-          <p class="text-xs text-brand-700">Monto</p>
-          <p class="font-extrabold text-2xl text-brand-800">Bs. {{ cuotaSel?.monto }}</p>
-        </div>
-
-        <input type="file" accept="image/*" @change="onFileEfectivo"
-          class="w-full text-xs border border-slate-200 rounded-2xl p-2" />
-        <img v-if="comprobanteEfectivo" :src="comprobanteEfectivo"
-          class="mt-3 rounded-2xl max-h-40 mx-auto border border-slate-200" />
-
-        <div class="mt-5 space-y-2">
-          <AppButton :disabled="!comprobanteEfectivo" @click="confirmarEfectivo">
-            Registrar pago
-          </AppButton>
-          <AppButton variant="ghost" @click="showEfectivo = false">Cancelar</AppButton>
-        </div>
-      </div>
-    </div>
-
     <!-- Modal verificar comprobante -->
     <div v-if="verificarOpen" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div class="bg-white rounded-3xl w-full max-w-sm p-5 my-4">
+      <div class="bg-white rounded-3xl w-full max-w-sm p-5 my-4 max-h-[90vh] overflow-y-auto">
         <p class="font-bold mb-1">Verificar comprobante</p>
         <p class="text-xs text-slate-500 mb-3">
           Cuota {{ cuotaVer?.numero }} · Bs. {{ cuotaVer?.monto }}
@@ -227,10 +194,8 @@
         </div>
 
         <img v-if="cuotaVer?.comprobante" :src="cuotaVer.comprobante"
-             class="w-full rounded-2xl border border-slate-200 max-h-80 object-contain mb-3" />
-        <p v-else class="text-xs text-slate-400 mb-3 text-center py-4">
-          Sin imagen adjunta
-        </p>
+             class="w-full rounded-2xl border border-slate-200 max-h-72 object-contain mb-3 bg-slate-50" />
+        <p v-else class="text-xs text-slate-400 mb-3 text-center py-4">Sin imagen adjunta</p>
 
         <p v-if="cuotaVer?.notaCliente" class="text-xs text-slate-500 mb-3">
           <b>Nota del cliente:</b> {{ cuotaVer.notaCliente }}
@@ -253,7 +218,6 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import AppCard from '../components/AppCard.vue';
 import AppButton from '../components/AppButton.vue';
-import PagoModal from '../components/PagoModal.vue';
 import QrPagoModal from '../components/QRPagoModal.vue';
 import { usePrestamosStore } from '../stores/prestamos';
 import { storage } from '../services/storage';
@@ -285,7 +249,6 @@ const etiquetaTipo = (t) => ({
 }[t] || t);
 
 const formatoFecha = (iso) => iso ? new Date(iso).toLocaleDateString('es-BO') : '—';
-
 const iconoEstado = (c) =>
   c.estado === 'PAGADA' ? '✅' :
   c.estado === 'EN_VERIFICACION' ? '🟡' : '⏳';
@@ -298,22 +261,13 @@ const cuotasEnVerificacion = computed(() =>
 const verClienteOpen = ref(false);
 const verCliente = () => { verClienteOpen.value = true; };
 
-// --- Registrar pago (admin)
-const showPago = ref(false);
+// --- Registrar pago (admin, solo QR)
 const showQr = ref(false);
-const showEfectivo = ref(false);
 const cuotaSel = ref(null);
-const comprobanteEfectivo = ref(null);
 
-const abrirPago = (c) => { cuotaSel.value = c; showPago.value = true; };
+const abrirPago = (c) => { cuotaSel.value = c; showQr.value = true; };
 
-const onMetodo = (m) => {
-  showPago.value = false;
-  if (m === 'QR') showQr.value = true;
-  else showEfectivo.value = true;
-};
-
-const confirmarQR = ({ metodo, comprobante }) => {
+const confirmarQR = ({ comprobante }) => {
   const arr = storage.prestamos();
   const pr = arr.find(x => x.id === p.value.id);
   const cu = pr.cuotas.find(x => x.id === cuotaSel.value.id);
@@ -328,32 +282,6 @@ const confirmarQR = ({ metodo, comprobante }) => {
   store.cargar();
   p.value = store.lista.find(x => x.id === route.params.id);
   showQr.value = false;
-  cuotaSel.value = null;
-};
-
-const onFileEfectivo = (e) => {
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = (ev) => (comprobanteEfectivo.value = ev.target.result);
-  r.readAsDataURL(f);
-};
-
-const confirmarEfectivo = () => {
-  const arr = storage.prestamos();
-  const pr = arr.find(x => x.id === p.value.id);
-  const cu = pr.cuotas.find(x => x.id === cuotaSel.value.id);
-  cu.estado = 'PAGADA';
-  cu.fechaPago = new Date().toISOString();
-  cu.metodo = 'EFECTIVO';
-  cu.comprobante = comprobanteEfectivo.value;
-  cu.verificadoEn = new Date().toISOString();
-  if (pr.cuotas.every(x => x.estado === 'PAGADA')) pr.estado = 'PAGADO';
-  storage.guardarPrestamos(arr);
-
-  store.cargar();
-  p.value = store.lista.find(x => x.id === route.params.id);
-  showEfectivo.value = false;
-  comprobanteEfectivo.value = null;
   cuotaSel.value = null;
 };
 
