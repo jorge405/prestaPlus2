@@ -20,7 +20,7 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
-import BottomNav from '../components/bottomNav.vue';
+import BottomNav from '../components/BottomNav.vue';
 
 const auth = useAuthStore();
 const router = useRouter();

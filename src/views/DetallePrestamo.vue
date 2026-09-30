@@ -124,7 +124,7 @@ import { useRoute } from 'vue-router';
 import AppCard from '../components/AppCard.vue';
 import AppButton from '../components/AppButton.vue';
 import PagoModal from '../components/PagoModal.vue';
-import QrPagoModal from '../components/QrPagoModal.vue';
+import QrPagoModal from '../components/QRPagoModal.vue';
 import { usePrestamosStore } from '../stores/prestamos';
 
 const route = useRoute();
