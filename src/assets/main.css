@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #app { height: 100%; background: #f8fafc; }
+body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+.bg-brand-gradient { background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%); }
+.bg-brand-soft { background: linear-gradient(180deg, #ecfdf5 0%, #f8fafc 60%); }
